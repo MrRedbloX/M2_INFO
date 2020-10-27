@@ -70,7 +70,7 @@ public class Server {
     public void process(String s) {
       try {
         JSONObject json = new JSONObject(s);
-        json.put("proximity", (Float.parseFloat(json.getString("proximity")) / 8)+"");
+        float proximity = Float.parseFloat(json.getString("proximity"));
         String str = "accelerometer: "+json.getString("accelerometer")+" / ";
         str += "gyroscope: "+json.getString("gyroscope")+" / ";
         str += "proximity: "+json.getString("proximity");

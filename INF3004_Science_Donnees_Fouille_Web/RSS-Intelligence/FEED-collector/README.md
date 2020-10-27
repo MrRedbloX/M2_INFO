@@ -13,3 +13,6 @@ The result will be a list.
 ## Test
 Display the raw content of feed.data by using:
 \>> python print_raw_feeds.py
+## Scheduler
+Execute the scheduler in order to update the feeds every 5 minutes:
+\>> python feed_scheduler.py
