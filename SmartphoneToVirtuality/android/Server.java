@@ -11,11 +11,13 @@ import org.json.JSONObject;
 public class Server {
     private ServerSocket serverSocket;
     private static final int port = 4269;
+    private static int upd_count, count_per_second = 0;
 
     public Server() {
         try {
             serverSocket = new ServerSocket(port);
             print_addr();
+            follow_updates();
         }
         catch (IOException ioe) {
             ioe.printStackTrace();
@@ -54,6 +56,7 @@ public class Server {
         while (true) {
               DatagramPacket packet = new DatagramPacket(buf, buf.length);
               socket.receive(packet);
+              upd_count++;
               packet = new DatagramPacket(buf, buf.length, packet.getAddress(), packet.getPort());
               String received = new String(packet.getData(), 0, packet.getLength());
               received = received.substring(0, received.indexOf('\0'));
@@ -67,11 +70,12 @@ public class Server {
       }
     }
 
-    public void process(String s) {
+    private void process(String s) {
       try {
         JSONObject json = new JSONObject(s);
         float proximity = Float.parseFloat(json.getString("proximity"));
-        String str = "accelerometer: "+json.getString("accelerometer")+" / ";
+        String str = upd_count+" upd/s - ";
+        str += "accelerometer: "+json.getString("accelerometer")+" / ";
         str += "gyroscope: "+json.getString("gyroscope")+" / ";
         str += "proximity: "+json.getString("proximity");
         System.out.print('\r'+str+'\r');
@@ -79,6 +83,23 @@ public class Server {
       catch (Exception e) {
         e.printStackTrace();
       }
+    }
+
+    private void follow_updates() {
+      new Thread() {
+        public void run() {
+          while(true) {
+            try {
+              Thread.sleep(1000);
+              count_per_second = upd_count;
+              upd_count = 0;
+            }
+            catch(Exception e) {
+              e.printStackTrace();
+            }
+          }
+        }
+      }.start();
     }
 
     public static void main(String[] args) {
