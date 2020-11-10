@@ -1,0 +1,5 @@
+https://www.lefigaro.fr/rss/figaro_economie.xml
+https://www.lemonde.fr/economie/rss_full.xml
+https://www.francetvinfo.fr/economie/tendances.rss
+https://feeds.leparisien.fr/leparisien/rss/economie
+https://www.europe1.fr/rss/economie.xml

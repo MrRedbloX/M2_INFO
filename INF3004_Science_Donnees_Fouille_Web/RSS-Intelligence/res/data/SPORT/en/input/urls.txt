@@ -1,0 +1,5 @@
+http://feeds.bbci.co.uk/sport/rss.xml
+https://www.theguardian.com/uk/sport/rss
+https://www.france24.com/en/tag/sport/rss
+https://www.latimes.com/sports/rss2.0.xml
+http://rss.cnn.com/rss/edition_sport.rss

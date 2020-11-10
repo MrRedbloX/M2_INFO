@@ -1,0 +1,5 @@
+http://feeds.bbci.co.uk/news/science_and_environment/rss.xml
+https://www.theguardian.com/science/rss
+https://www.france24.com/en/tag/science/rss
+https://www.latimes.com/science/rss2.0.xml
+http://rss.cnn.com/rss/edition_space.rss

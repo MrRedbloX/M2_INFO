@@ -1,0 +1,5 @@
+https://www.lefigaro.fr/rss/figaro_sciences.xml
+https://www.lemonde.fr/sciences/rss_full.xml
+https://www.francetvinfo.fr/sciences.rss
+https://feeds.leparisien.fr/leparisien/rss/environnement
+https://www.europe1.fr/rss/sciences.xml
