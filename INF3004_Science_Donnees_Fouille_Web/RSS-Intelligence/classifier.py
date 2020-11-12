@@ -196,7 +196,7 @@ class DictClassifer:
     Use ponderation to increment a specific class (to get a relevant representation of the given class from its set).
     Each word is process only once (don't process duplicates).
     """
-    def predict(self, X):
+    def predict(self, X, min_score=None):
         dict_keys = self.dict.keys()
         lst_predict_classes = []
         done_words = []
@@ -210,7 +210,12 @@ class DictClassifer:
                         for key in self.dict[word].keys():
                             predict_classes[key] += self.get_ponderation(key, self.dict[word])
             # print(predict_classes)
-            lst_predict_classes.append(max(predict_classes, key=predict_classes.get))
+            predict_class = max(predict_classes, key=predict_classes.get)
+
+            if min_score is None or predict_classes[predict_class] > min_score:
+                lst_predict_classes.append(predict_class)
+            else:
+                lst_predict_classes.append(None)
 
         return lst_predict_classes
     
@@ -225,6 +230,7 @@ class DictClassifer:
         if sum_ > 0:
             return (dict_classes[class_] - np.average(lst_classes)) / sum_
         return 0
+
 
 class Classifier:
 
@@ -320,8 +326,8 @@ class Exploiter:
 
         clf = Classifier().load_classif(lang)
         clean_txt = Cleaner().clean_feed(feed, limit=True)
-        print(clf.predict([clean_txt]))
+        print(clf.predict([clean_txt], min_score=0.4))
 
 if __name__ == '__main__':
-    Exploiter.predict_random_feed('en')
-    # Exploiter().update_dict_scheduler()
+    # Exploiter.predict_random_feed('en')
+    Exploiter().update_dict_scheduler()
