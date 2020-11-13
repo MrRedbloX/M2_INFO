@@ -7,7 +7,7 @@ from shelve import open as shopen
 from json import dumps
 
 from collector import Collector
-from config import op_path, es_config, es_index, path_main_input
+from config import path_main_output, es_config, es_index, path_main_input, classes, langs
 
 collect = Collector()
 
@@ -19,7 +19,7 @@ class Indexer:
     def make_index(self):
         es = ES(es_config)
         es.indices.delete(index=es_index, ignore=[400, 404])
-        f = shopen(op_path)
+        f = shopen(path_main_output)
 
         print('Start indexing...')
         for key in f.keys():
@@ -30,61 +30,91 @@ class Indexer:
     First run the collect of the feeds.
     Then index the feeds.
     """
-    def index(self):
-        collect.feed_parser(path_main_input, op_path)
+    def index(self, collect=True):
+        if collect:
+            collect.feed_parser(path_main_input, path_main_output)
         self.make_index()
 
 class Searcher:
     
     """
-    Parse the item into JSON then print it
+    Converts the result of the query to json
     """
-    def print_item(self, res):
-        for item in res:
-            print(dumps(item, ensure_ascii=False))
+    def to_json(self, res):
+        return list(map(lambda item: dumps(item, ensure_ascii=False), res))
 
     """
-    Get every item of the index
+    Simply runs a scan with a given query
     """
-    def get_all(self):
-        es = ES(es_config)
-        res = scan(es, index=es_index, query={"query": { "match_all" : {}}})
-        self.print_item(res)
+    def query(self, query):
+        return self.to_json(scan(ES(es_config), index=es_index, query=query))
+
 
     """
-    Ask the user a word to query
-    Run a search and get every item which match the given query
+    Runs a search given multiple arguments.
+    text is the string which will match some fields.
+    If index is True it will index the feeds, if collect is True it will also collect them before.
+    list_classes contains a list of wanted classes.
+    predict_value is the minimum number of the prediction function.
     """
-    def get_query(self):
-        query = input("Enter a search: ")
-        es = ES(es_config)
-        req = {
-        "query": {
-            "multi_match" : {
-            "query": query,
-            "fields": ["title", "language", "date", "description"]
-            }
-        }
-        }
-        res = scan(es, index=es_index, query=req)
-        self.print_item(res)
+    def search(self, text=None, index=False, collect=False, list_classes=classes, predict_value=0, languages=langs):
+        text_query = { "match_all" : {}} if text is None else { "multi_match" : { "query": text, "fields": ["title", "language", "date", "description"]}}
+        predict_val_query = { "range": { "predict_class_val": { "gt": predict_value}}}
 
-    """
-    Handle the given mode
-    """
-    def search(self, mode, index=False):
+        classes_query = { "bool": { "should": []}}
+        for class_ in list_classes:
+            classes_query["bool"]["should"].append({ "match": { "predict_class": class_}})
+
+        langs_query = { "bool": { "should": []}}
+        for lang in languages:
+            langs_query["bool"]["should"].append({ "match": { "language": lang}})
+
         if index:
-            Indexer().index()
-        if mode == 'ALL':
-            self.get_all()
-        elif mode == 'QUERY':
-            self.get_query()
-        else:
-            print(f'Unhandled mode {mode}')
+            Indexer().index(collect=collect)
+
+        return self.query({"query" : { "bool": { "must": [text_query, classes_query, predict_val_query, langs_query]}}})
 
 if __name__ == '__main__':
+    text = None
+    index = False
+    collect = False
+    list_classes = classes
+    predict_value = 0
+    languages = langs
+
     try:
-        Searcher().search(sys.argv[1], index=True)
+        for arg in sys.argv[1:]:
+            if '=' in arg:
+                name, val = arg.split('=')
+            
+                if name == 'text':
+                    text = val
+                elif name == 'classes':
+                    list_classes = []
+                    for class_ in val.split(':'):
+                        list_classes.append(class_)
+                elif name == 'predict_value':
+                    predict_value = float(val)
+                elif name == 'langs':
+                    languages = []
+                    for lang in val.split(':'):
+                        languages.append(lang)
+                else:
+                    raise Exception('Unhandled name.')
+
+            else:
+                if arg == 'index':
+                    index = True
+                elif arg == 'collect':
+                    collect = True
+                else:
+                   raise Exception('Unhandled arg.') 
+
     except Exception as e:
         print(e)
-        print("Usage: searcher <mode>")
+        print("Usage: searcher (<name>=<value> || <arg>)*")
+
+    
+    res = Searcher().search(text, index=index, collect=collect, list_classes=list_classes, predict_value=predict_value, languages=languages)
+    print(res)
+    print(len(res))

@@ -11,7 +11,7 @@ from stop_words import get_stop_words
 from sklearn.model_selection import train_test_split as tts
 
 from collector import Collector
-from config import langs, classes, path_res, path_main_input
+from config import langs, classes, path_res, path_main_input, path_main_output
 
 collect = Collector()
 
@@ -196,7 +196,7 @@ class DictClassifer:
     Use ponderation to increment a specific class (to get a relevant representation of the given class from its set).
     Each word is process only once (don't process duplicates).
     """
-    def predict(self, X, min_score=None):
+    def predict(self, X, return_func_val=False):
         dict_keys = self.dict.keys()
         lst_predict_classes = []
         done_words = []
@@ -208,14 +208,13 @@ class DictClassifer:
                     done_words.append(word)
                     if word in dict_keys:
                         for key in self.dict[word].keys():
-                            predict_classes[key] += self.get_ponderation(key, self.dict[word])
+                            predict_classes[key] += self.decision_func(key, self.dict[word])
             # print(predict_classes)
             predict_class = max(predict_classes, key=predict_classes.get)
-
-            if min_score is None or predict_classes[predict_class] > min_score:
-                lst_predict_classes.append(predict_class)
+            if return_func_val:
+                lst_predict_classes.append((predict_class, predict_classes[predict_class]))
             else:
-                lst_predict_classes.append(None)
+                lst_predict_classes.append(predict_class)
 
         return lst_predict_classes
     
@@ -224,11 +223,12 @@ class DictClassifer:
     Returns a proportion of a given class regarding its dict_classes.
     (number_representation - average_representation) / sum_representation
     """
-    def get_ponderation(self, class_, dict_classes):
+    def decision_func(self, class_, dict_classes):
         lst_classes = np.asarray(list(dict_classes.values()))
         sum_ = np.sum(lst_classes)
-        if sum_ > 0:
-            return (dict_classes[class_] - np.average(lst_classes)) / sum_
+        size = len(lst_classes)
+        if sum_ > 0 and size > 0:
+            return (dict_classes[class_] - np.average(lst_classes)) / sum_ / size
         return 0
 
 
@@ -326,8 +326,28 @@ class Exploiter:
 
         clf = Classifier().load_classif(lang)
         clean_txt = Cleaner().clean_feed(feed, limit=True)
-        print(clf.predict([clean_txt], min_score=0.4))
+        print(clf.predict([clean_txt], return_func_val=True))
+
+    def populate_classes():
+        collect.feed_parser(path_main_input, path_main_output)
+        f = shopen(path_main_output, writeback=True)
+        classif = Classifier()
+        list_classif = {}
+        for lang in langs:
+            list_classif[lang] = classif.load_classif(lang)
+        list_classif_keys = list_classif.keys()
+        cleaner = Cleaner()
+
+        print("Start predicting classes...")
+        for key in f.keys():
+            f[key]['predict_class'], f[key]['predict_class_val'] = None, 0
+            if f[key]['language'] in list_classif_keys:
+                f[key]['predict_class'], f[key]['predict_class_val'] = list_classif[f[key]['language']].predict([cleaner.clean_feed(f[key], limit=True)], return_func_val=True)[0]
+        
+        print("Done.")
+        f.close()
 
 if __name__ == '__main__':
     # Exploiter.predict_random_feed('en')
-    Exploiter().update_dict_scheduler()
+    # Exploiter().update_dict_scheduler()
+    Exploiter.populate_classes()

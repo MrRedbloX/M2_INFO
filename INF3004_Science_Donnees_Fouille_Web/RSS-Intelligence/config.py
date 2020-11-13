@@ -3,6 +3,6 @@ classes = ['ART_CULTURE', 'ECONOMIE', 'POLITIQUE', 'SANTE_MEDECINE', 'SCIENCE', 
 path_res = './res'
 path_main_input = './input/urls.txt'
 
-op_path = './output/feeds'
+path_main_output = './output/feeds'
 es_config = [{'host': 'localhost', 'port': 9200}]
 es_index = 'feeds'
