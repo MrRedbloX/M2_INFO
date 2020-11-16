@@ -127,15 +127,19 @@ class Cleaner:
     For every classified feed will add a field "clean_txt" which is the cleaned title + description.
     """
     def preprocessing(self):
+        vect = []
         for lang in langs:
             for class_ in classes:
                 print(f'Process: {class_} - {lang.upper()}')
                 f = shopen(Utils.path_output(class_, lang), writeback=True)
                 for key in f.keys():
                     f[key]['language'] = lang
-                    f[key]['clean_txt'] = self.clean_feed(f[key], limit=True)
+                    # f[key]['clean_txt'] = self.clean_feed(f[key], limit=True)
+                    vect.append({class_: self.clean_feed(f[key], limit=True)})
                 f.close()
                 print('Done.')
+            with open(Utils.path_vect(lang), 'wb') as f:
+                dump(dumps(vect), f)
 
 class DictClassifer:
 
@@ -241,7 +245,7 @@ class Classifier:
     """
     def get_data_target(self, lang):
         with open(Utils.path_vect(lang), 'rb') as f:
-            vect = load(f)
+            vect = loads(load(f))
             data, target = [], []
             for o in vect:
                 target.append(list(o.keys())[0])
@@ -349,5 +353,5 @@ class Exploiter:
 
 if __name__ == '__main__':
     # Exploiter.predict_random_feed('en')
-    # Exploiter().update_dict_scheduler()
-    Exploiter.populate_classes()
+    Exploiter().update_dict_scheduler()
+    # Exploiter.populate_classes()
