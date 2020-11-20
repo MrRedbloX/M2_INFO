@@ -7,10 +7,10 @@ Collects and stores feeds from RSS feed urls.
 Indexes collected feeds with ElasticSearch module.
 ### Searcher
 Allows to run a seach on indexed feeds.
-Here are some examples:
-\>> python searcher.py classes=POLITIQUE:SCIENCE text=biden predict_value=0.1
-\>> python searcher.py index classes=POLITIQUE:SCIENCE text=trump
-\>> python searcher.py index collect text="New York" langs=en
+Here are some examples:  
+\>> python searcher.py classes=POLITIQUE:SCIENCE text=biden predict_value=0.1  
+\>> python searcher.py index classes=POLITIQUE:SCIENCE text=trump  
+\>> python searcher.py index collect text="New York" langs=en  
 ## Classifier module
 Predicts a class for a given feed.
 ### Dataset
@@ -21,3 +21,5 @@ For every feed in the dataset, creates a string with the cleaned title and descr
 From a list of feeds to learn and their corresponding classes, learns the data and is able to predict a class for a new feed.
 ### Exploitation
 Feed the Dictionnary Classifier (create dataset, preprocessing, ...) or predicts the class of a random feed.
+## Enrichment module
+Uses Word2Vec lib to get better understanding of word proximity for the Searcher module.
