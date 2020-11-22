@@ -84,8 +84,8 @@ class Cleaner:
     def clean_syntax(self, str_):
         ret = str_
         for punc in self.puncts:
-            ret = str_.replace(str(punc), ' ')
-
+            ret = ret.replace(str(punc), " ")
+            
         return ret.replace('\t', ' ').replace('\n', ' ').strip()
 
 
@@ -99,7 +99,7 @@ class Cleaner:
         stem = stemmer(Utils.lang_literal(lang))
         for word in str_.split():
             if word not in sw and not word.isdigit():
-                cleaned.append(stem.stemWord(word.lower()))
+                cleaned.append(stem.stemWord(word.lower().strip()))
         return ' '.join(cleaned)
     
     """

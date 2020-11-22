@@ -7,7 +7,8 @@ from shelve import open as shopen
 from json import dumps
 
 from collector import Collector
-from config import path_main_output, es_config, es_index, path_main_input, classes, langs
+from enrichment import Enrichment
+from config import path_main_output, es_config, es_index, path_main_input, classes, langs, match_fields
 
 collect = Collector()
 
@@ -57,9 +58,17 @@ class Searcher:
     list_classes contains a list of wanted classes.
     predict_value is the minimum number of the prediction function.
     """
-    def search(self, text=None, index=False, collect=False, list_classes=classes, predict_value=0, languages=langs):
-        text_query = { "match_all" : {}} if text is None else { "multi_match" : { "query": text, "fields": ["title", "language", "date", "description"]}}
+    def search(self, text=None, index=False, collect=False, list_classes=classes, predict_value=0, languages=langs, enrich=True, enrich_value=0):
+        text_query = { "match_all" : {}} if text is None else { "multi_match" : { "query": text, "fields": match_fields}}
         predict_val_query = { "range": { "predict_class_val": { "gt": predict_value}}}
+
+        if enrich and text is not None:
+            enr = Enrichment()
+            text_query = { "bool": { "should": [text_query]}}
+            for similars in enr.most_similar(text.split()):
+                for similar in similars:
+                    if(similar[1] > enrich_value):
+                        text_query["bool"]["should"].append({ "multi_match" : { "query": similar[0], "fields": match_fields}})
 
         classes_query = { "bool": { "should": []}}
         for class_ in list_classes:
@@ -78,8 +87,10 @@ if __name__ == '__main__':
     text = None
     index = False
     collect = False
+    enrich = False
     list_classes = classes
     predict_value = 0
+    enrich_value = 0
     languages = langs
 
     try:
@@ -95,6 +106,8 @@ if __name__ == '__main__':
                         list_classes.append(class_)
                 elif name == 'predict_value':
                     predict_value = float(val)
+                elif name == 'enrich_value':
+                    enrich_value = float(val)
                 elif name == 'langs':
                     languages = []
                     for lang in val.split(':'):
@@ -107,6 +120,8 @@ if __name__ == '__main__':
                     index = True
                 elif arg == 'collect':
                     collect = True
+                elif arg == 'enrich':
+                    enrich = True
                 else:
                    raise Exception('Unhandled arg.') 
 
@@ -115,6 +130,6 @@ if __name__ == '__main__':
         print("Usage: searcher (<name>=<value> || <arg>)*")
 
     
-    res = Searcher().search(text, index=index, collect=collect, list_classes=list_classes, predict_value=predict_value, languages=languages)
+    res = Searcher().search(text, index=index, collect=collect, list_classes=list_classes, predict_value=predict_value, languages=languages, enrich=enrich, enrich_value=enrich_value)
     print(res)
     print(len(res))

@@ -5,7 +5,6 @@ http://www.abc.net.au/news/feed/52278/rss.xml
 http://feeds.washingtonpost.com/rss/world
 http://feeds.latimes.com/latimes/news/nationworld/world
 http://www.aljazeera.com/category/organisation/rss
-http://backup.globaltimes.cn/DesktopModules/DnnForge%20-%20NewsArticles/Rss.aspx?TabID=99&ModuleID=405&CategoryID=14,49,50,51,52,53,15&MaxCount=100&sortBy=StartDate&sortDirection=DESC
 http://rss.shanghaidaily.com/Portal/mainSite/Handler.ashx?i=7
 http://feeds.feedburner.com/TheGlobeAndMail-International
 http://www.thetimes.co.uk/tto/news/world/rss

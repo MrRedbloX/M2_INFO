@@ -21,20 +21,16 @@ class Enrichment:
         self.cleaner = Cleaner()
         self.path = path_res+"/enrich/vect"
 
-    def load(self):
-        if os.path.isfile(self.path):
-            with open(self.path, 'rb') as f:
-                return loads(load(f))
-
-    def store(self, vects):
-        with open(self.path, 'wb') as f:
-            dump(dumps(vects), f)
-
     def tokenize(self, str_, lang):
         sw = get_stop_words(lang)
-        return [word for word in [word_tokenize(sent) for sent in sent_tokenize(self.cleaner.clean_syntax(str_).lower())] if word not in sw]
+        words = [word_tokenize(sent) for sent in sent_tokenize(self.cleaner.clean_syntax(str_).lower().strip())]
 
-    def enrich(self, collect=True):
+        for i in range(len(words)):
+            words[i] = [w for w in words[i] if w not in sw and not w.isdigit()]
+        
+        return words
+
+    def enrich(self, collect=True, init=True):
         words = []
 
         if collect:
@@ -45,13 +41,33 @@ class Enrichment:
             if f[key]['language'] in langs:
                 words.extend(self.tokenize(f[key]['title']+f[key]['description'] if f[key]['description'] is not None else "", f[key]['language']))
 
-        word2vec = Word2Vec(words, min_count=2)
-        self.store(word2vec.wv)
+        word2vec = self.load()
+        if init or word2vec is None:
+            word2vec = Word2Vec(words, min_count=2)
+        else:
+            word2vec.train(words, total_examples=word2vec.corpus_count, epochs=word2vec.epochs)
+
+        Word2Vec.save(word2vec, self.path)
+
+    def load(self):
+        if os.path.isfile(self.path):
+            return Word2Vec.load(self.path)
+
+    def get_word_vect(self):
+        vect = self.load()
+        if vect is not None:
+            return vect.wv
+
+    def most_similar(self, words):
+        ret = []
+        vect = self.get_word_vect()
+        if vect is not None:
+            for word in words:
+                if word in vect.vocab:
+                    ret.append(vect.most_similar(word))
+        return ret
 
 if __name__ == "__main__":
-    enrichment = Enrichment()
-    enrichment.enrich(collect=False)
-    vects = enrichment.load()
-    # print(vects.vocab)
-    print(vects.most_similar('contacts'))
-
+    enr = Enrichment()
+    enr.enrich(collect=True, init=False)
+    print(enr.most_similar(['virtuel']))
