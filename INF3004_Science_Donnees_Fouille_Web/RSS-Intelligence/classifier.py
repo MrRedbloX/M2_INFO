@@ -352,11 +352,15 @@ class Exploiter:
 
 if __name__ == '__main__':
     try:
-        func = getattr(Exploiter, sys.argv[1])
-        if len(sys.argv) > 2:
-            func(sys.argv[2])
+        name = sys.argv[1]
+        if name == "update_dict_scheduler":
+            Exploiter().update_dict_scheduler()
         else:
-            func()
+            func = getattr(Exploiter, name)
+            if len(sys.argv) > 2:
+                func(sys.argv[2])
+            else:
+                func(Exploiter)
     except Exception as e:
         print(e)
         print("Usage: classifier <func_name> ?<arg>")
