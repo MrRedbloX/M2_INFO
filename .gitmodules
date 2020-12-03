@@ -1,0 +1,3 @@
+[submodule "INF3003_Apprentissage_Profond/INF3003_CNN"]
+	path = INF3003_Apprentissage_Profond/INF3003_CNN
+	url = https://github.com/LordRayd/INF3003_CNN
