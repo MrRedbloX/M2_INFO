@@ -1,5 +1,0 @@
-https://www.lefigaro.fr/rss/figaro_sante.xml
-https://www.lemonde.fr/sante/rss_full.xml
-https://www.francetvinfo.fr/sante.rss
-https://feeds.leparisien.fr/leparisien/rss/societe
-https://www.europe1.fr/rss/sante.xml

@@ -1,5 +1,0 @@
-https://sport24.lefigaro.fr/rssfeeds/sport24-accueil.xml
-https://www.lemonde.fr/sport/rss_full.xml
-https://www.francetvinfo.fr/sports.rss
-https://feeds.leparisien.fr/leparisien/rss/sports
-https://www.europe1.fr/rss/sport.xml

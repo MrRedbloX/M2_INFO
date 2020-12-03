@@ -1,4 +1,0 @@
-http://feeds.bbci.co.uk/news/politics/rss.xml
-https://www.theguardian.com/politics/rss
-https://www.france24.com/en/tag/uk-politics/rss
-https://www.latimes.com/politics/rss2.0.xml

@@ -1,5 +1,0 @@
-https://www.lefigaro.fr/rss/figaro_culture.xml
-https://www.lemonde.fr/culture/rss_full.xml
-https://www.francetvinfo.fr/culture.rss
-https://feeds.leparisien.fr/leparisien/rss/culture-loisirs
-https://www.europe1.fr/rss/culture.xml

@@ -1,5 +1,0 @@
-https://www.lefigaro.fr/rss/figaro_politique.xml
-https://www.lemonde.fr/politique/rss_full.xml
-https://www.francetvinfo.fr/politique.rss
-https://feeds.leparisien.fr/leparisien/rss/politique
-https://www.europe1.fr/rss/politique.xml

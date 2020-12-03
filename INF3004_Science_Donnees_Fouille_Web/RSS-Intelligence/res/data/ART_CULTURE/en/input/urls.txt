@@ -1,5 +1,0 @@
-https://www.bbc.com/culture/feed.rss
-https://www.theguardian.com/us/culture/rss
-https://www.france24.com/en/culture/rss
-https://www.latimes.com/topic/arts/rss2.0.xml
-http://rss.cnn.com/rss/edition_entertainment.rss

@@ -1,4 +1,0 @@
-http://feeds.bbci.co.uk/news/health/rss.xml
-https://www.theguardian.com/society/health/rss
-https://www.france24.com/en/tag/health/rss
-https://www.latimes.com/health/rss2.0.xml
