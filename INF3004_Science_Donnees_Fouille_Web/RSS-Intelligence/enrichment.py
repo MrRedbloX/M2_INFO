@@ -21,6 +21,9 @@ class Enrichment:
         self.cleaner = Cleaner()
         self.path = path_res+"/enrich/vect"
 
+    """
+    Returns a list which contains list of cleaned words (sentence)
+    """
     def tokenize(self, str_, lang):
         sw = get_stop_words(lang)
         words = [word_tokenize(sent) for sent in sent_tokenize(self.cleaner.clean_syntax(str_).lower().strip())]
@@ -30,6 +33,11 @@ class Enrichment:
         
         return words
 
+    """
+    Trains the word2vec vector.
+    If collect is True, runs the feed parser.
+    If init is True it will create a new vector.
+    """
     def enrich(self, collect=True, init=True):
         words = []
 
@@ -49,15 +57,25 @@ class Enrichment:
 
         Word2Vec.save(word2vec, self.path)
 
+    """
+    Loads the vector
+    """
     def load(self):
         if os.path.isfile(self.path):
             return Word2Vec.load(self.path)
 
+    """
+    Returns the word vector of word2vec
+    """
     def get_word_vect(self):
         vect = self.load()
         if vect is not None:
             return vect.wv
 
+    """
+    Returns a list of words that are similar to the given one according to the vector.
+    The returned list can be empty.
+    """
     def most_similar(self, words):
         ret = []
         vect = self.get_word_vect()

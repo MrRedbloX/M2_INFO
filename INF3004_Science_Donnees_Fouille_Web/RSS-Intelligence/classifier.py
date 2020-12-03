@@ -1,4 +1,4 @@
-import os
+import os, sys
 from time import sleep
 
 from shelve import open as shopen
@@ -113,13 +113,11 @@ class Cleaner:
     Clean the title and the description (if exists) of a feed.
     Returns a concatenation of the cleaned title and description.
     """
-    def clean_feed(self, feed, limit=False, limit_size=50):
+    def clean_feed(self, feed, limit=False):
         clean_txt = self.clean_str(feed['title'], feed['language'])
         if feed['description'] is not None:
-            desc = feed['description']
-            if limit:
-                desc = desc[:limit_size]
-            clean_txt += " "+self.clean_str(desc, feed['language'])
+            clean_txt += " "+self.clean_str(feed['description'], feed['language'])
+        clean_txt += " "+self.clean_str(feed['text'], feed['language'])
         return clean_txt
 
 
@@ -134,7 +132,6 @@ class Cleaner:
                 f = shopen(Utils.path_output(class_, lang), writeback=True)
                 for key in f.keys():
                     f[key]['language'] = lang
-                    # f[key]['clean_txt'] = self.clean_feed(f[key], limit=True)
                     vect.append({class_: self.clean_feed(f[key], limit=True)})
                 f.close()
                 print('Done.')
@@ -200,7 +197,7 @@ class DictClassifer:
     Use ponderation to increment a specific class (to get a relevant representation of the given class from its set).
     Each word is process only once (don't process duplicates).
     """
-    def predict(self, X, return_func_val=False):
+    def predict(self, X, return_func_val=False, return_predict_classes=False):
         dict_keys = self.dict.keys()
         lst_predict_classes = []
         done_words = []
@@ -213,10 +210,12 @@ class DictClassifer:
                     if word in dict_keys:
                         for key in self.dict[word].keys():
                             predict_classes[key] += self.decision_func(key, self.dict[word])
-            # print(predict_classes)
+
             predict_class = max(predict_classes, key=predict_classes.get)
             if return_func_val:
                 lst_predict_classes.append((predict_class, predict_classes[predict_class]))
+            elif return_predict_classes:
+                lst_predict_classes.append((predict_class, predict_classes))
             else:
                 lst_predict_classes.append(predict_class)
 
@@ -352,6 +351,12 @@ class Exploiter:
         f.close()
 
 if __name__ == '__main__':
-    # Exploiter.predict_random_feed('en')
-    Exploiter().update_dict_scheduler()
-    # Exploiter.populate_classes()
+    try:
+        func = getattr(Exploiter, sys.argv[1])
+        if len(sys.argv) > 2:
+            func(sys.argv[2])
+        else:
+            func()
+    except Exception as e:
+        print(e)
+        print("Usage: classifier <func_name> ?<arg>")

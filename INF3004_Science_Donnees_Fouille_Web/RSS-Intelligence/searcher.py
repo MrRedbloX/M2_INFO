@@ -57,6 +57,9 @@ class Searcher:
     If index is True it will index the feeds, if collect is True it will also collect them before.
     list_classes contains a list of wanted classes.
     predict_value is the minimum number of the prediction function.
+    languages contains the wanted languages.
+    If enrich is True, uses the word2vec vector.
+    enrich_value is the confidence value of similar words.
     """
     def search(self, text=None, index=False, collect=False, list_classes=classes, predict_value=0, languages=langs, enrich=True, enrich_value=0):
         text_query = { "match_all" : {}} if text is None else { "multi_match" : { "query": text, "fields": match_fields}}

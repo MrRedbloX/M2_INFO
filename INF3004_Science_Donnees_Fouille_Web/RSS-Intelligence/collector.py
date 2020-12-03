@@ -4,8 +4,23 @@ from hashlib import md5
 from bs4 import BeautifulSoup as bs
 from shelve import open as shopen
 from random import choice
+from urllib.request import urlopen
 
 class Collector:
+
+    """
+    Returns all text in a page
+    Does not handle javascript post loading
+    """
+    def get_content(self, page):
+        try:
+            soup = bs(urlopen(page, timeout=1).read(), features='lxml')
+            ps = soup.find_all('p', text=True)
+
+            for p in ps:
+                yield p.getText()
+        except:
+            yield ""
 
     """
     Collect feeds from a url.
@@ -22,19 +37,22 @@ class Collector:
 
         collector = []
         for post in entries:
-            process = {}
-            process['title'] = post['title']
-            process['source_url'] = url
-            process['language'] = detect(process['title'])
-            process['source_page'] = post['link']
-            process['id'] = md5(str(process['title']+process['source_url']+process['language']+process['source_page']).encode()).hexdigest()
-            process['date'] = None
-            if 'published' in post:
-                process['date'] = post['published']
-            process['description'] = None
-            if 'summary' in post:
-                process['description'] = ''.join(bs(post['summary'], features='lxml').findAll(text=True))
-            collector.append(process)
+            try:
+                process = {}
+                process['title'] = post['title']
+                process['source_url'] = url
+                process['language'] = detect(process['title'])
+                process['text'] = ' '.join(list(self.get_content(post['link'])))
+                process['id'] = md5(str(process['title']+process['source_url']+process['language']).encode()).hexdigest()
+                process['date'] = None
+                if 'published' in post:
+                    process['date'] = post['published']
+                process['description'] = None
+                if 'summary' in post:
+                    process['description'] = ''.join(bs(post['summary'], features='lxml').findAll(text=True))
+                collector.append(process)
+            except:
+                continue
         return collector
 
     """
@@ -81,3 +99,6 @@ class Collector:
             lst_urls.remove(url)
             if len(urls) == 0:
                 raise Exception('No more urls available')
+
+if __name__ == "__main__":
+    Collector().feed_parser("./input/urls.txt", "./output/feeds")

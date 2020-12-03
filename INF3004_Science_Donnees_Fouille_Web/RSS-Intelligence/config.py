@@ -5,4 +5,4 @@ path_main_input = './input/urls.txt'
 path_main_output = './output/feeds'
 es_config = [{'host': 'localhost', 'port': 9200}]
 es_index = 'feeds'
-match_fields = ["title", "language", "date", "description"]
+match_fields = ["title", "language", "date", "description", "text"]
