@@ -36,7 +36,7 @@ def to_dict(classes, lang, names):
     res['pred'] = predicted
     res['probs'] = probs
     res['names'] = names
-    res['method'] = 'DICT_CLASSIFIER_(custom)'
+    res['method'] = 'DictClassifier(custom)'
     res['lang'] = lang
 
     return res
