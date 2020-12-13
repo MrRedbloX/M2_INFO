@@ -1,7 +1,8 @@
+# Following commented code might has to be executed once.
 # import nltk
 # nltk.download('punkt')
 
-import os
+from os import path
 
 from gensim.models import Word2Vec
 from nltk import sent_tokenize, word_tokenize
@@ -9,20 +10,24 @@ from nltk import sent_tokenize, word_tokenize
 from stop_words import get_stop_words
 
 from shelve import open as shopen
-from pickle import load, loads, dump, dumps
 
 from collector import Collector
-from config import path_main_input, path_main_output, langs, path_res
 from classifier import Cleaner
+from config import path_main_input, path_main_output, langs, path_res
 
 class Enrichment:
 
+    """
+    Init of Enrichment class.
+    Assign a cleaner.
+    Creates a path for the vect.
+    """
     def __init__(self):
         self.cleaner = Cleaner()
         self.path = path_res+"/enrich/vect"
 
     """
-    Returns a list which contains list of cleaned words (sentence)
+    Returns a list which contains list of cleaned words (sentence).
     """
     def tokenize(self, str_, lang):
         sw = get_stop_words(lang)
@@ -58,14 +63,14 @@ class Enrichment:
         Word2Vec.save(word2vec, self.path)
 
     """
-    Loads the vector
+    Loads the vector.
     """
     def load(self):
-        if os.path.isfile(self.path):
+        if path.isfile(self.path):
             return Word2Vec.load(self.path)
 
     """
-    Returns the word vector of word2vec
+    Returns the word vector of word2vec.
     """
     def get_word_vect(self):
         vect = self.load()
@@ -85,7 +90,10 @@ class Enrichment:
                     ret.append(vect.most_similar(word))
         return ret
 
+"""
+First enrich with new feeds and then prints the most similar words of a given word.
+"""
 if __name__ == "__main__":
     enr = Enrichment()
     enr.enrich(collect=True, init=False)
-    print(enr.most_similar(['virtuel']))
+    print(enr.most_similar(['virtuel'])) # Change the word here.

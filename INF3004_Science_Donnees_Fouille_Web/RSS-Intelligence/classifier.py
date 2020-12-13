@@ -1,9 +1,10 @@
-import os, sys
+from os import path
+from sys import argv
 from time import sleep
 
 from shelve import open as shopen
 from pickle import load, loads, dump, dumps
-import numpy as np
+from numpy import asarray, average, sum as nsum
 
 from string import punctuation
 from snowballstemmer import stemmer
@@ -71,8 +72,8 @@ class Cleaner:
 
 
     """
-    Init of Cleaner
-    Add some new punctuations to string punctuation
+    Init of Cleaner.
+    Add some new punctuations to string punctuation.
     """
     def __init__(self):
         self.puncts = punctuation
@@ -91,7 +92,7 @@ class Cleaner:
 
     """
     Removes stop words and digits from a string.
-    Stems all remainded words.
+    Stems all remaining words.
     """
     def clean_grammar(self, str_, lang):
         cleaned = []
@@ -111,7 +112,7 @@ class Cleaner:
 
     """
     Clean the title and the description (if exists) of a feed.
-    Returns a concatenation of the cleaned title and description.
+    Returns a concatenation of the cleaned title, description and text.
     """
     def clean_feed(self, feed, limit=False):
         clean_txt = self.clean_str(feed['title'], feed['language'])
@@ -122,7 +123,7 @@ class Cleaner:
 
 
     """
-    For every classified feed will add a field "clean_txt" which is the cleaned title + description.
+    For every classified feed will add a field "clean_txt" which is the cleaned title + description + text.
     """
     def preprocessing(self):
         vect = []
@@ -195,7 +196,7 @@ class DictClassifer:
     """
     Predicts a list of classes from a list of clean strings.
     Use ponderation to increment a specific class (to get a relevant representation of the given class from its set).
-    Each word is process only once (don't process duplicates).
+    Each word is process only once (does not process duplicates).
     """
     def predict(self, X, return_func_val=False, return_predict_classes=False):
         dict_keys = self.dict.keys()
@@ -224,14 +225,14 @@ class DictClassifer:
 
     """
     Returns a proportion of a given class regarding its dict_classes.
-    (number_representation - average_representation) / sum_representation
+    Formula: (number_of_representation - average_of_representation) / sum_of_representation / nb_of_classes
     """
     def decision_func(self, class_, dict_classes):
-        lst_classes = np.asarray(list(dict_classes.values()))
-        sum_ = np.sum(lst_classes)
+        lst_classes = asarray(list(dict_classes.values()))
+        sum_ = nsum(lst_classes)
         size = len(lst_classes)
         if sum_ > 0 and size > 0:
-            return (dict_classes[class_] - np.average(lst_classes)) / sum_ / size
+            return (dict_classes[class_] - average(lst_classes)) / sum_ / size
         return 0
 
 
@@ -249,7 +250,7 @@ class Classifier:
             for o in vect:
                 target.append(list(o.keys())[0])
                 data.append(list(o.values())[0])
-            return np.asarray(data), np.asarray(target)
+            return asarray(data), asarray(target)
 
 
     """
@@ -257,7 +258,7 @@ class Classifier:
     """
     def load_classif(self, lang):
         classif_path = Utils.path_classifier(lang)
-        if os.path.exists(classif_path):
+        if path.exists(classif_path):
             with open(classif_path, 'rb') as f:
                 return loads(load(f))
 
@@ -331,6 +332,9 @@ class Exploiter:
         clean_txt = Cleaner().clean_feed(feed, limit=True)
         print(clf.predict([clean_txt], return_func_val=True))
 
+    """
+    For each feed contains in the main output file, predicts the class.
+    """
     def populate_classes():
         collect.feed_parser(path_main_input, path_main_output)
         f = shopen(path_main_output, writeback=True)
@@ -350,17 +354,20 @@ class Exploiter:
         print("Done.")
         f.close()
 
+"""
+Runs a given function of the Exploiter class.
+"""
 if __name__ == '__main__':
     try:
-        name = sys.argv[1]
+        name = argv[1]
         if name == "update_dict_scheduler":
             Exploiter().update_dict_scheduler()
         else:
             func = getattr(Exploiter, name)
-            if len(sys.argv) > 2:
-                func(sys.argv[2])
+            if len(argv) > 2:
+                func(argv[2])
             else:
-                func(Exploiter)
+                func()
     except Exception as e:
         print(e)
         print("Usage: classifier <func_name> ?<arg>")

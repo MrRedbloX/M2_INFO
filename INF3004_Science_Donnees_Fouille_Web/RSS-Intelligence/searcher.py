@@ -1,4 +1,4 @@
-import sys
+from sys import argv
 
 from elasticsearch import Elasticsearch as ES
 from elasticsearch.helpers import scan
@@ -15,7 +15,7 @@ collect = Collector()
 class Indexer:
 
     """
-    Add every feeds contained in the output file to an index.
+    Adds every feeds contained in the output file to an index.
     """
     def make_index(self):
         es = ES(es_config)
@@ -28,7 +28,7 @@ class Indexer:
         print('Done.')
 
     """
-    First run the collect of the feeds.
+    First runs the collect of the feeds.
     Then index the feeds.
     """
     def index(self, collect=True):
@@ -39,13 +39,13 @@ class Indexer:
 class Searcher:
     
     """
-    Converts the result of the query to json
+    Converts the result of the query to json.
     """
     def to_json(self, res):
         return list(map(lambda item: dumps(item, ensure_ascii=False), res))
 
     """
-    Simply runs a scan with a given query
+    Simply runs a scan with a given query.
     """
     def query(self, query):
         return self.to_json(scan(ES(es_config), index=es_index, query=query))
@@ -86,18 +86,22 @@ class Searcher:
 
         return self.query({"query" : { "bool": { "must": [text_query, classes_query, predict_val_query, langs_query]}}})
 
+"""
+Runs the function search of the class Searcher with a list of given params (see below).
+Prints the resulting feeds and the total.
+"""
 if __name__ == '__main__':
-    text = None
-    index = False
-    collect = False
-    enrich = False
-    list_classes = classes
-    predict_value = 0
-    enrich_value = 0
-    languages = langs
+    text = None # The text to query (use "" for sentence with spaces).
+    collect = False # If True collects new feeds.
+    index = False # If true index collected feeds.
+    enrich = False # If true use the enrichment module.
+    list_classes = classes # The list of predict classes.
+    predict_value = 0 # The minimum predict value of predict classes for the search.
+    enrich_value = 0 # The minimum confidence value for the similar words of the search.
+    languages = langs # The handled languages.
 
     try:
-        for arg in sys.argv[1:]:
+        for arg in argv[1:]:
             if '=' in arg:
                 name, val = arg.split('=')
             
@@ -132,7 +136,6 @@ if __name__ == '__main__':
         print(e)
         print("Usage: searcher (<name>=<value> || <arg>)*")
 
-    
     res = Searcher().search(text, index=index, collect=collect, list_classes=list_classes, predict_value=predict_value, languages=languages, enrich=enrich, enrich_value=enrich_value)
     print(res)
     print(len(res))

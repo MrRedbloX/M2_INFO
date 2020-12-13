@@ -1,16 +1,17 @@
+from shelve import open as shopen
+from random import choice
+
+from urllib.request import urlopen
+from bs4 import BeautifulSoup as bs
+
 from feedparser import parse
 from langdetect import detect
 from hashlib import md5
-from bs4 import BeautifulSoup as bs
-from shelve import open as shopen
-from random import choice
-from urllib.request import urlopen
-
 class Collector:
 
     """
-    Returns all text in a page
-    Does not handle javascript post loading
+    Returns all text in a page.
+    Does not handle javascript post loading.
     """
     def get_content(self, page):
         try:
@@ -85,7 +86,7 @@ class Collector:
         self.store(output, feeds)
 
     """
-    From a list of urls and eventually a specific language return a random feed
+    From a list of urls and eventually a specific language return a random feed.
     """
     def get_random_feed(self, urls, lang=None):
         lst_urls = open(urls, 'r').read().splitlines()
@@ -100,5 +101,8 @@ class Collector:
             if len(urls) == 0:
                 raise Exception('No more urls available')
 
+"""
+Collects feeds from the main input file and to the main output shelve.
+"""
 if __name__ == "__main__":
     Collector().feed_parser("./input/urls.txt", "./output/feeds")

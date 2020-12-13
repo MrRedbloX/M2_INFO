@@ -1,5 +1,9 @@
 # RSS-Intelligence
 Internet watch system which exploits RSS feeds.
+## Disclaimer
+All librairies used in this project are free of rights.  
+This entire project is open source and free of reuse.
+When running a search, the ElasticSearch server needs to be running.
 ## Modules
 ### Collector
 Collects and stores feeds from RSS feed urls.
@@ -13,13 +17,13 @@ Predicts a class for a given feed.
 #### Dataset
 From a list of relevant urls corresponding to a specific class, creates a dataset for each handled class and language.
 #### Cleaning
-For every feed in the dataset, creates a string with the cleaned title and description.
+For every feed in the dataset, creates a string with the cleaned title, description and text.
 #### Dictionnary Classifier
 From a list of feeds to learn and their corresponding classes, learns the data and is able to predict a class for a new feed.
 #### Exploitation
-Feed the Dictionnary Classifier (create dataset, preprocessing, ...) or predicts the class of a random feed.
+Various functions that allows to exploit the Classifier module (ex: feed the dictionnary, predict a random feed, etc.).
 ### Enrichment
-Uses Word2Vec lib to get better understanding of word proximity for the Searcher module.
+Uses Word2Vec library to get better understanding of word proximity for the Searcher module.
 
 *For more details, check code documentation.*
 ## Architecture
