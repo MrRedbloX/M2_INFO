@@ -1,8 +1,10 @@
 from sys import argv
+from multiprocessing import cpu_count, Pool
 
 import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup as bs
 from json import dumps
+from numpy import append as nappend
 
 from classifier import Cleaner, Classifier, DictClassifer
 
@@ -20,24 +22,38 @@ def items_to_list(items):
         yield item.find("title").text + item.find("description").text + item.find("text").text
 
 """
-From a list of stringify items, yields the cleaned string.
+Returns a cleaned items
 """
-def clean_items(items, lang):
-    cleaner = Cleaner()
-    for item in items:
-        yield cleaner.clean_str(''.join(bs(item, features='lxml').findAll(text=True)), lang)
+def clean_item(item, cleaner, lang):
+    return cleaner.clean_str(''.join(bs(item, features='lxml').findAll(text=True)), lang)
 
 """
-From a xml filename, returns a list of cleaned items.
+From a list of items, returns a cleaned version
 """
-def get_cleaned_items(filename, lang):
-    return list(clean_items(items_to_list(get_items(filename)), lang))
+def clean_items(items, cleaner, lang):
+    return parallelize(items, clean_item, [cleaner, lang])
+
+"""
+Returns the predict class of an item
+"""
+def predict_class(item, clf):
+    return clf.predict(item, return_predict_classes=True)
 
 """
 From a list of cleaned items, returns the correspondind predict classes with also the value of the decision function for each class.
 """
-def get_predict_class(items, lang):
-    return Classifier().load_classif(lang).predict(items, return_predict_classes=True)
+def predict_classes(items, clf):
+    return parallelize(items, predict_class, [clf])
+
+"""
+Executes operations on element in list in parallel
+"""
+def parallelize(lst, func, args):
+    pool = Pool(cpu_count())
+    results = [pool.apply_async(func, args=tuple(nappend([elt], args))) for elt in lst]
+    pool.close()
+    pool.join()
+    return list(map(lambda p: p.get(), results))
 
 """
 Builds a dict given a specific expectation for the structure.
@@ -76,10 +92,21 @@ if __name__ == "__main__":
         filename = argv[1]
         lang = argv[2]
         names = ['COGOLUEGNES'] # Can be modified
-        print("Starting to classify...")
-        result = to_dict(get_predict_class(get_cleaned_items(filename, lang), lang), lang, names)
-        to_json(names[0]+"_"+result['method']+"_"+lang+".res", result)
+        clf = Classifier().load_classif(lang)
+        cleaner = Cleaner()
+
+        print("Parsing items...")
+        items = list(items_to_list(get_items(filename)))
+        print(f"{len(items)} items parsed.")
+        print("Cleaning...")
+        cleaned_items = clean_items(items, cleaner, lang)
+        print("Classifying...")
+        predicted_classes = predict_classes(cleaned_items, clf)
+        print("Saving to json...")
+        result = to_dict(predicted_classes, lang, names)
+        to_json(f"{names[0]}_{result['method']}_{lang}.res", result)
         print("Done.")
+
     except Exception as e:
         print(e)
         print("usage: benchmark <filename> <lang>")

@@ -185,7 +185,7 @@ class DictClassifer:
     def score(self, X, y):
         res = 0
         size = len(X)
-        pred_classes = self.predict(X)
+        pred_classes = [self.predict(x) for x in X]
         for i in range(size):
             if y[i] == pred_classes[i]:
                 res += 1
@@ -194,33 +194,28 @@ class DictClassifer:
         return res / size
 
     """
-    Predicts a list of classes from a list of clean strings.
+    Predicts a class of a clean str.
     Use ponderation to increment a specific class (to get a relevant representation of the given class from its set).
     Each word is process only once (does not process duplicates).
     """
-    def predict(self, X, return_func_val=False, return_predict_classes=False):
+    def predict(self, x, return_func_val=False, return_predict_classes=False):
         dict_keys = self.dict.keys()
-        lst_predict_classes = []
         done_words = []
 
-        for x in X:
-            predict_classes = self.build_dict_classes()
-            for word in x.split():
-                if word not in done_words:
-                    done_words.append(word)
-                    if word in dict_keys:
-                        for key in self.dict[word].keys():
-                            predict_classes[key] += self.decision_func(key, self.dict[word])
+        predict_classes = self.build_dict_classes()
+        for word in x.split():
+            if word not in done_words:
+                done_words.append(word)
+                if word in dict_keys:
+                    for key in self.dict[word].keys():
+                        predict_classes[key] += self.decision_func(key, self.dict[word])
 
-            predict_class = max(predict_classes, key=predict_classes.get)
-            if return_func_val:
-                lst_predict_classes.append((predict_class, predict_classes[predict_class]))
-            elif return_predict_classes:
-                lst_predict_classes.append((predict_class, predict_classes))
-            else:
-                lst_predict_classes.append(predict_class)
-
-        return lst_predict_classes
+        predict_class = max(predict_classes, key=predict_classes.get)
+        if return_func_val:
+            return (predict_class, predict_classes[predict_class])
+        elif return_predict_classes:
+            return (predict_class, predict_classes)
+        return predict_class
     
 
     """
@@ -330,7 +325,7 @@ class Exploiter:
 
         clf = Classifier().load_classif(lang)
         clean_txt = Cleaner().clean_feed(feed, limit=True)
-        print(clf.predict([clean_txt], return_func_val=True))
+        print(clf.predict(clean_txt, return_func_val=True))
 
     """
     For each feed contains in the main output file, predicts the class.
@@ -349,7 +344,7 @@ class Exploiter:
         for key in f.keys():
             f[key]['predict_class'], f[key]['predict_class_val'] = None, 0
             if f[key]['language'] in list_classif_keys:
-                f[key]['predict_class'], f[key]['predict_class_val'] = list_classif[f[key]['language']].predict([cleaner.clean_feed(f[key], limit=True)], return_func_val=True)[0]
+                f[key]['predict_class'], f[key]['predict_class_val'] = list_classif[f[key]['language']].predict(cleaner.clean_feed(f[key], limit=True), return_func_val=True)[0]
         
         print("Done.")
         f.close()
